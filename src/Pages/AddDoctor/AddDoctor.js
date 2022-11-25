@@ -12,20 +12,22 @@ const AddDoctor = () => {
     handleSubmit,
   } = useForm();
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const imageHostKey = process.env.REACT_APP_imgbb_key;
 
-  const {data: specialties, isLoading} = useQuery({
-    queryKey: ['specialty'],
+  const { data: specialties, isLoading } = useQuery({
+    queryKey: ["specialty"],
     queryFn: async () => {
-        const res = await fetch('http://localhost:5000/appointmentSpecialty')
-        const data = await res.json()
-        return data;
-    }
-  })
+      const res = await fetch(
+        "https://doctors-portal-server-murex-three.vercel.app/appointmentSpecialty"
+      );
+      const data = await res.json();
+      return data;
+    },
+  });
 
-  /** 
+  /**
    *  three places to store images
    * 1. image hosting server
    * 2. file system of your server
@@ -33,49 +35,51 @@ const AddDoctor = () => {
    */
 
   const handleAddDoctor = (data) => {
-    const image = data.image[0]
-    const formData = new FormData()
-    formData.append('image', image)
-    const url = `https://api.imgbb.com/1/upload?key=${imageHostKey}`
+    const image = data.image[0];
+    const formData = new FormData();
+    formData.append("image", image);
+    const url = `https://api.imgbb.com/1/upload?key=${imageHostKey}`;
     fetch(url, {
-        method: 'POST',
-        body: formData
+      method: "POST",
+      body: formData,
     })
-    .then(res => res.json())
-    .then(imgData => {
-        console.log(imgData)
-        if(imgData.success){
-            console.log(imgData.data.url)
-            const doctor = {
-                name: data.name,
-                email: data.email,
-                specialty: data.specialty,
-                image: imgData.data.url
+      .then((res) => res.json())
+      .then((imgData) => {
+        console.log(imgData);
+        if (imgData.success) {
+          console.log(imgData.data.url);
+          const doctor = {
+            name: data.name,
+            email: data.email,
+            specialty: data.specialty,
+            image: imgData.data.url,
+          };
+
+          // save doctors info to the database
+
+          fetch(
+            "https://doctors-portal-server-murex-three.vercel.app/doctors",
+            {
+              method: "POST",
+              headers: {
+                "content-type": "application/json",
+                authorization: `bearer ${localStorage.getItem("accessToken")}`,
+              },
+              body: JSON.stringify(doctor),
             }
-
-            // save doctors info to the database
-
-            fetch('http://localhost:5000/doctors', {
-                method: 'POST',
-                headers: {
-                    'content-type': 'application/json',
-                    authorization: `bearer ${localStorage.getItem('accessToken')}`
-                },
-                body: JSON.stringify(doctor)
-            })
-            .then(res => res.json())
-            .then(result => {
-                console.log(result)
-                toast.success(`${data.name} is added successfully`)
-                navigate('/dashboard/managedoctors')
-            })
+          )
+            .then((res) => res.json())
+            .then((result) => {
+              console.log(result);
+              toast.success(`${data.name} is added successfully`);
+              navigate("/dashboard/managedoctors");
+            });
         }
-    })
-
+      });
   };
 
-  if(isLoading){
-    return <Loading></Loading>
+  if (isLoading) {
+    return <Loading></Loading>;
   }
 
   return (
@@ -112,20 +116,16 @@ const AddDoctor = () => {
           <label className="label">
             <span className="label-text">Specialty</span>
           </label>
-          <select 
-          {...register('specialty')}
-          className="select input-bordered w-full max-w-xs mb-5">
-            <option >
-              Please Select a Specialty
-            </option>
-            {
-                specialties.map(specialty => <option
-                key={specialty._id}
-                value={specialty.name}
-                >{specialty.name}</option>)
-            }
-            
-          
+          <select
+            {...register("specialty")}
+            className="select input-bordered w-full max-w-xs mb-5"
+          >
+            <option>Please Select a Specialty</option>
+            {specialties.map((specialty) => (
+              <option key={specialty._id} value={specialty.name}>
+                {specialty.name}
+              </option>
+            ))}
           </select>
         </div>
         <div className="form-control w-full max-w-xs">
@@ -137,9 +137,7 @@ const AddDoctor = () => {
             {...register("image", { required: "Photo is required" })}
             className="input input-bordered w-full max-w-xs"
           />
-          {errors.img && (
-            <p className="text-red-600">{errors.img?.message}</p>
-          )}
+          {errors.img && <p className="text-red-600">{errors.img?.message}</p>}
         </div>
         <input
           className="btn btn-accent w-full"

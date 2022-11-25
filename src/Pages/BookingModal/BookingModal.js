@@ -6,51 +6,47 @@ import { AuthContext } from "../../context/AuthProvider";
 const BookingModal = ({ treatment, selectedDate, setTreatment, refetch }) => {
   const { name: treatmentName, slots, price } = treatment;
   const date = format(selectedDate, "PP");
-  const {user} = useContext(AuthContext)
+  const { user } = useContext(AuthContext);
 
-  const handleBooking = event => {
-    event.preventDefault()
+  const handleBooking = (event) => {
+    event.preventDefault();
     const form = event.target;
     const slot = form.slot.value;
     const name = form.name.value;
     const email = form.email.value;
-    const number = form.number.value
+    const number = form.number.value;
 
     const booking = {
-        appointmentDate: date,
-        treatment: treatmentName,
-        patient: name,
-        slot,
-        email,
-        number,
-        price
-    }
+      appointmentDate: date,
+      treatment: treatmentName,
+      patient: name,
+      slot,
+      email,
+      number,
+      price,
+    };
 
-    console.log(booking)
+    console.log(booking);
 
-    fetch('http://localhost:5000/bookings', {
-      method: 'POST',
+    fetch("https://doctors-portal-server-murex-three.vercel.app/bookings", {
+      method: "POST",
       headers: {
-        'content-type': 'application/json'
+        "content-type": "application/json",
       },
-      body: JSON.stringify(booking)
+      body: JSON.stringify(booking),
     })
-    .then(res => res.json())
-    .then(data => {
-      console.log(data)
-      if(data.acknowledged){
-        setTreatment(null)
-        toast.success('Booking Confirmed')
-        refetch()
-      }
-      else{
-        toast.error(data.message)
-      }
-    })
-
-    
-
-  }
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+        if (data.acknowledged) {
+          setTreatment(null);
+          toast.success("Booking Confirmed");
+          refetch();
+        } else {
+          toast.error(data.message);
+        }
+      });
+  };
 
   return (
     <>
@@ -64,7 +60,10 @@ const BookingModal = ({ treatment, selectedDate, setTreatment, refetch }) => {
             ✕
           </label>
           <h3 className="text-lg font-bold">{treatmentName}</h3>
-          <form onSubmit={handleBooking} className="grid grid-cols-1 gap-3 mt-6">
+          <form
+            onSubmit={handleBooking}
+            className="grid grid-cols-1 gap-3 mt-6"
+          >
             <input
               type="text"
               disabled
@@ -72,24 +71,23 @@ const BookingModal = ({ treatment, selectedDate, setTreatment, refetch }) => {
               className="input w-full input-bordered"
             />
             <select name="slot" className="select select-bordered w-full ">
-              
-              {
-                slots.map((slot, i) => <option 
-                key={i}
-                value={slot}>
-                   {slot}
-                  </option>)
-              }
+              {slots.map((slot, i) => (
+                <option key={i} value={slot}>
+                  {slot}
+                </option>
+              ))}
             </select>
 
-            <input name="name"
+            <input
+              name="name"
               type="text"
               placeholder="Your Name"
               defaultValue={user?.displayName}
               disabled
               className="input w-full input-bordered"
             />
-            <input name="email"
+            <input
+              name="email"
               type="email"
               placeholder="Email"
               defaultValue={user?.email}
@@ -97,7 +95,8 @@ const BookingModal = ({ treatment, selectedDate, setTreatment, refetch }) => {
               className="input w-full input-bordered"
               required
             />
-            <input name="number"
+            <input
+              name="number"
               type="text"
               placeholder="Phone Number"
               className="input w-full input-bordered"
